@@ -1,81 +1,112 @@
-import math
+import sympy as sp
 
-def licz_pochodne(f, x, h=1e-6):
-    """
-    Funkcja oblicza numerycznie wartości pierwszej i drugiej pochodnej funkcji f(x) w punkcie x.
-
-    Parametry:
-    f: funkcja, której pochodne mają zostać obliczone
-    x: punkt, w którym pochodne są obliczane
-    h: wartość kroku różniczkowania (domyślnie 1e-6)
-
-    Zwraca:
-    df1: wartość pierwszej pochodnej funkcji f(x) w punkcie x
-    df2: wartość drugiej pochodnej funkcji f(x) w punkcie x
-    """
-    fx = f(x)
-    fxh = f(x + h)
-    fx2h = f(x + 2 * h)
-    df1 = (fxh - fx) / h
-    df2 = (fx2h - 2 * fxh + fx) / (h ** 2)
-    return df1, df2
 
 # Definiujemy funkcję
 def f(x):
-    return x**2
-
-# Obliczamy pochodne w punkcie x=
-x = float(input("Podaj punkt, w którym chcesz obliczyć pochodne funkcji: "))
-df1, df2 = licz_pochodne(f, x)
-
-# Wyświetlamy wyniki
-print(f"Wartość pierwszej pochodnej funkcji sin(x) w punkcie x=1 wynosi: {df1}")
-print(f"Wartość drugiej pochodnej funkcji sin(x) w punkcie x=1 wynosi: {df2}")
+    return x ** 3 - 2 * x ** 2 - 4 * x - 7
 
 
-def metoda_stycznych(f, x0, epsilon=1e-6, max_iter=100):
-    """
-    Funkcja oblicza przybliżone miejsce zerowe funkcji f(x) oraz wartość pochodnej w tym punkcie
-    za pomocą metody stycznych.
+# Twierdzenie Bolzano-Cauchy'ego
+def twBolzanoCauchyego(a, b):
+    # Czy f(a)*f(b) < 0 ?
+    twierdzenie = f(a) * f(b)
+    if (twierdzenie < 0):
+        return True
+    else:
+        return False
 
-    Parametry:
-    f: funkcja, której miejsce zerowe ma zostać znalezione
-    x0: wartość początkowa zmiennej x
-    epsilon: dokładność obliczeń (domyślnie 1e-6)
-    max_iter: maksymalna liczba iteracji (domyślnie 100)
 
-    Zwraca:
-    x1: przybliżone miejsce zerowe funkcji f(x)
-    df: wartość pochodnej funkcji f(x) w punkcie x1
-    """
-    # Obliczenie pochodnej funkcji w punkcie x0
-    df = licz_pochodne(f, x0)[0]
+# Liczymy pochodną I stopnia:
+def pochodne():
+    # Definiujemy zmienną symboliczną
+    x = sp.Symbol('x')
 
-    # Sprawdzenie, czy pochodna w punkcie x0 jest równa 0
-    if abs(df) < epsilon:
-        raise ValueError("Pochodna w punkcie x0 wynosi 0")
+    # Obliczamy pochodną funkcji f
+    df = sp.diff(f(x), x)
 
-    # Iteracyjne wyznaczanie kolejnych przybliżeń miejsca zerowego
-    x1 = x0 - f(x0) / df
-    i = 1
-    while abs(f(x1)) > epsilon and i < max_iter:
-        df = licz_pochodne(f, x1)[0]
-        if abs(df) < epsilon:
-            raise ValueError("Pochodna w punkcie x1 wynosi 0")
-        x1 = x1 - f(x1) / df
-        i += 1
+    # Zwracamy wynik
+    return df
 
-    # Sprawdzenie, czy osiągnięto maksymalną liczbę iteracji
-    if i == max_iter:
-        print("Nie osiągnięto wymaganej dokładności w maksymalnej liczbie iteracji")
 
-    return x1, df
+# Liczymy pochodną II stopnia:
+def pochodne2():
+    # Definiujemy zmienną symboliczną
+    x = sp.Symbol('x')
 
-def g(x):
-    return x**2 - 4
+    # Obliczamy pochodną funkcji f
+    df = sp.diff(pochodne(), x)
 
-x0 = float(input("Podaj punkt startowy: "))
-x1, df = metoda_stycznych(g, x0)
+    # Zwracamy wynik
+    return df
 
-print(f"Przybliżone miejsce zerowe funkcji g(x) = x**2 - 4 wynosi: {x1}")
-print(f"Wartość pochodnej funkcji g(x) = x**2 - 4 w punkcie x={x1} wynosi: {df}")
+
+# Sprawdzamy czy:
+# f'(x0) * f''(x0) > 0
+# f (x0) * f''(x0) > 0
+def sprawdzenie(a, b):
+    x = sp.Symbol('x')
+
+    f_valueA = f(a)
+    df_valueA = pochodne().subs(x, a)
+    df_valueA2 = pochodne2().subs(x, a)
+
+    f_valueB = f(b)
+    df_valueB = pochodne().subs(x, b)
+    df_valueB2 = pochodne2().subs(x, b)
+
+    # print(f_valueA)
+    # print(df_valueA)
+    # print(df_valueA2)
+    #
+    # print(f_valueB)
+    # print(df_valueB)
+    # print(df_valueB2)
+
+    # Czy: f'(a) * f''(a) > 0  i Czy: f(a) * f''(a) > 0
+    if (df_valueA * df_valueA2 > 0 and f_valueA * df_valueA2 > 0):
+        return a
+    else:
+        if (df_valueB * df_valueB2 > 0 and f_valueB * df_valueB2 > 0):
+            return b
+        else:
+            print("Żadna wartość nie sprełnia warunków!")
+
+
+# Liczymy dla x0 = sprawdzenie()
+# wzór: xn+1 = xn - f(xn)/f'(xn)
+def obliczenia():
+    # Zmienna wykorzystywana do sprawdzenia po którym razie program się zakończy
+    n = 1
+
+    x = sp.Symbol('x')
+
+    # Definiujemy epsilon
+    epsilon = float(input("Podaj epislon (ε):"))
+
+    # Definiujemy granice przedziału [a,b]
+    a = int(input("Podaj początek przedziału (a): "))
+    b = int(input("Podaj koniec przedziału (b): "))
+
+    # Sprawdzamy czy spełnione jest twierdzenie Bolzano-Cauchy'ego
+    if (twBolzanoCauchyego(a, b)):
+
+        xn = sprawdzenie(a, b)
+
+        while (True):
+            # Liczymy xn+1
+            xnn = xn - (f(xn) / pochodne().subs(x, xn))
+            # print("Wynik dla x" + str(n) + " = " + str(xnn))
+            # print(abs(f(xnn)))
+            if (abs(f(xnn)) < epsilon):
+                print("Wynik dla x" + str(n) + " = " + str(round(xnn, 2)))
+                return abs(round(f(xnn), 5))
+            else:
+                xn = xnn
+                n = n + 1
+
+    else:
+        print("Twierdzenie Bolzano-Cauchy'ego nie jest spełnione")
+
+
+# Wypisujemy wynik programu
+print(obliczenia())
